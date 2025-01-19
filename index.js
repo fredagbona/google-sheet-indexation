@@ -69,7 +69,7 @@ async function checkIndexation(domain) {
   await page.goto(searchUrl);
 
   const isIndexed = await page.evaluate(() => {
-    return !document.body.innerText.includes('Aucun résultat trouvé');
+    return !document.body.innerText.includes('Aucun document ne correspond aux termes de recherche spécifiés');
   });
 
   await browser.close();
