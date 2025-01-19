@@ -71,6 +71,8 @@ async function checkIndexation(domain) {
   const isIndexed = await page.evaluate(() => {
     return !document.body.innerText.includes('Aucun document ne correspond aux termes de recherche spécifiés');
   });
+  console.log(await page.content());
+
 
   await browser.close();
   return isIndexed ? 'Indexé' : 'Non indexé';
