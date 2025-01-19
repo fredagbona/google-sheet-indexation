@@ -52,8 +52,15 @@ async function updateSheet(auth, rowIndex, status) {
 async function checkIndexation(domain) {
   const browser = await puppeteer.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'], 
-    dumpio: true,
+    args: [
+        '--no-sandbox',               
+        '--disable-setuid-sandbox',    
+        '--disable-dev-shm-usage',    
+        '--no-zygote',                
+        '--single-process',            
+        '--disable-accelerated-2d-canvas',
+        '--disable-gl-drawing-for-tests',  
+      ], 
   });
 
   const page = await browser.newPage();
