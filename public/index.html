@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Sheet Indexation</title>
+  <style>
+    body {
+        text-align: center;
+      font-family: Arial, sans-serif;
+    }
+    #logs {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      height: 300px;
+      overflow-y: scroll;
+    }
+    #logs p {
+      margin: 5px 0;
+    }
+    #execute-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Google Sheet Indexation</h1>
+  <button id="execute-btn">Lancer le script</button>
+  <div id="logs"></div>
+
+  <script>
+    const logsContainer = document.getElementById('logs');
+    const executeButton = document.getElementById('execute-btn');
+
+    
+    const socket = new WebSocket(`ws://${window.location.host}`);
+
+    socket.onmessage = (event) => {
+     
+      const log = document.createElement('p');
+      log.textContent = event.data;
+      logsContainer.appendChild(log);
+
+     
+      logsContainer.scrollTop = logsContainer.scrollHeight;
+    };
+
+    executeButton.addEventListener('click', async () => {
+      try {
+        const response = await fetch('/execute', { method: 'POST' });
+        const message = await response.text();
+        console.log(message);
+      } catch (error) {
+        console.error('Erreur lors de l\'exécution du script :', error);
+      }
+    });
+  </script>
+</body>
+</html>
