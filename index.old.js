@@ -1,5 +1,5 @@
 const express = require('express');
-const axios = require('axios');
+const puppeteer = require('puppeteer');
 const { google } = require('googleapis');
 const WebSocket = require('ws');
 const app = express();
@@ -8,8 +8,8 @@ const PORT = process.env.PORT || 3000;
 require('dotenv').config();
 
 const auth = new google.auth.GoogleAuth({
-  credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS),
-  //keyFile: '/credentials.json', 
+  //credentials: JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS),
+  keyFile: '/credentials.json',  
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
 
@@ -50,23 +50,43 @@ function sleep(ms) {
 }
 
 async function checkIndexation(domain) {
-  try {
-    const response = await axios.get('https://searx.be/search', {
-      params: {
-        q: `site:${domain}`,
-        format: 'json',
-        engines: 'google',
-      },
-    });
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: [
+      '--no-sandbox', 
+      '--disable-setuid-sandbox', 
+      '--disable-dev-shm-usage', 
+      '--no-zygote', 
+      '--single-process', 
+      '--disable-accelerated-2d-canvas', 
+      '--disable-gl-drawing-for-tests', 
+    ],
+  });
 
-    const results = response.data.results;
+  const page = await browser.newPage();
 
-    // Si des résultats sont trouvés, le domaine est indexé
-    return results.length > 0 ? 'Indexé' : 'Non indexé';
-  } catch (error) {
-    console.error(`Erreur API SearXNG pour ${domain} :`, error.message);
-    return 'Erreur API SearXNG';
-  }
+ 
+  await page.setUserAgent(
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+  );
+
+  
+  await page.setExtraHTTPHeaders({
+    'Accept-Language': 'en-US,en;q=0.9',
+  });
+
+  const searchUrl = `https://www.google.com/search?q=site:${domain}`;
+  await page.goto(searchUrl, { waitUntil: 'domcontentloaded' });
+
+  
+  const isIndexed = await page.evaluate(() => {
+    return !document.body.innerText.includes('Aucun document ne correspond aux termes de recherche spécifiés');
+  });
+
+  console.log(await page.content()); 
+  await browser.close();
+
+  return isIndexed ? 'Indexé' : 'Non indexé';
 }
 
 async function executeScript() {
@@ -95,6 +115,7 @@ async function executeScript() {
       await updateSheet(auth, i + 2, 'Erreur');
     }
 
+    
     await sleep(10000);
   }
 
