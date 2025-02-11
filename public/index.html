@@ -28,6 +28,9 @@
       border: none;
       cursor: pointer;
     }
+    #execute-btn:hover {
+      background-color: #45a049;
+    }
   </style>
 </head>
 <body>
@@ -41,6 +44,18 @@
 
     
     const socket = new WebSocket(`wss://${window.location.host}`);
+
+    socket.onerror = (error) => {
+      console.error('Erreur WebSocket :', error);
+    };
+
+    socket.onopen = () => {
+      console.log('Connexion WebSocket ouverte.');
+    };
+
+    socket.onclose = (event) => {
+      console.log('Connexion WebSocket fermée :', event);
+    };
 
 
     socket.onmessage = (event) => {
@@ -63,5 +78,9 @@
       }
     });
   </script>
+
+  <footer style="text-align: center; margin-top: 20px; font-size: 12px; bottom: 0;">
+    <p>&copy;  Google Sheet Indexation by <a href="https://fredthedev.com">FredTheDev</a></p>
+  </footer>
 </body>
 </html>

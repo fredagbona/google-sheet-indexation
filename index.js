@@ -20,9 +20,17 @@ const server = require('http').createServer(app);
 const wss = new WebSocket.Server({ server });
 let wsClient = null;
 
+// wss.on('connection', (ws) => {
+//   wsClient = ws;
+//   console.log('Client connecté via WebSocket.');
+// });
+
 wss.on('connection', (ws) => {
   wsClient = ws;
-  console.log('Client connecté via WebSocket.');
+  console.log('Nouvelle connexion WebSocket établie.');
+  ws.on('message', (message) => {
+    console.log('Message reçu :', message);
+  });
 });
 
 function sendLog(message) {
